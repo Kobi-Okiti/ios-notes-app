@@ -7,18 +7,23 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct Home: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationView{
+            List(0..<9){ i in
+                Text("We are at \(i)")
+                    .padding()
+            }
+            .navigationTitle("Notes")
+            .navigationBarItems(trailing: Button(action: {
+                print("Add a note")
+            }, label: {
+                Text("Add")
+            }))
         }
-        .padding()
     }
 }
 
 #Preview {
-    ContentView()
+    Home()
 }
