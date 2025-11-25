@@ -14,6 +14,9 @@ struct Home: View {
                 Text("We are at \(i)")
                     .padding()
             }
+            .onAppear(perform: {
+                fetchNotes()
+            })
             .navigationTitle("Notes")
             .navigationBarItems(trailing: Button(action: {
                 print("Add a note")
@@ -22,6 +25,22 @@ struct Home: View {
             }))
         }
     }
+    func fetchNotes(){
+        let url = URL(string: "http://localhost:3000/notes")!
+        let task = URLSession.shared.dataTask(with: url) { data, res, err in
+            guard let data = data else {
+                return
+            }
+            print(String(data: data, encoding: .utf8))
+        }
+        task.resume()
+    }
+}
+
+struct Note: Identifiable, Codable {
+    var id: String { _id }
+    var _id: String
+    var note: String
 }
 
 #Preview {
