@@ -13,6 +13,9 @@ struct Home: View {
     @State var showAdd: Bool = false
     @State var showAlert: Bool = false
     @State var deleteItem: Note?
+    @State var updateNote = ""
+    @State var updateNoteId = ""
+    @State var isEditMode: EditMode = .inactive
     
     var alert: Alert{
         Alert(title: Text("Delete"), message: Text("Are you sure you want to delete this note?"), primaryButton: .destructive(Text("Delete"), action: deleteNote), secondaryButton: .cancel())
@@ -21,24 +24,56 @@ struct Home: View {
     var body: some View {
         NavigationView{
             List(self.notes){ note in
-                Text(note.note)
-                    .padding()
-                    .onLongPressGesture {
-                        self.showAlert.toggle()
-                        deleteItem = note
+                if(self.isEditMode == .inactive){
+                    Text(note.note)
+                        .padding()
+                        .onLongPressGesture {
+                            self.showAlert.toggle()
+                            deleteItem = note
+                        }
+                }
+                else {
+                    HStack{
+                        Image(systemName: "pencil.circle.fill")
+                            .foregroundColor(.yellow)
+                        Text(note.note)
+                            .padding()
                     }
+                    .onTapGesture {
+                        self.updateNote = note.note
+                        self.updateNoteId = note.id
+                        self.showAdd.toggle()
+                    }
+                }
             }
             .alert(isPresented: $showAlert, content: {
                 alert
             })
             .sheet(isPresented: $showAdd, onDismiss: fetchNotes, content: {
-                AddNoteView()
+                if(self.isEditMode == .inactive){
+                    AddNoteView()
+                }
+                else {
+                    UpdateNoteView(text: $updateNote, noteId: $updateNoteId)
+                }
             })
             .onAppear(perform: {
                 fetchNotes()
             })
             .navigationTitle("Notes")
-            .navigationBarItems(trailing: Button(action: {
+            .navigationBarItems(leading: Button(action: {
+                if (self.isEditMode == .inactive){
+                    self.isEditMode = .active
+                } else {
+                    self.isEditMode = .inactive
+                }
+            }, label: {
+                if (self.isEditMode == .inactive){
+                    Text("Edit")
+                } else {
+                    Text("Done")
+                }
+            }),trailing: Button(action: {
                 self.showAdd.toggle()
             }, label: {
                 Text("Add")
@@ -59,6 +94,10 @@ struct Home: View {
             }
         }
         task.resume()
+        
+        if(self.isEditMode == .active){
+            self.isEditMode = .inactive
+        }
     }
     
     func deleteNote(){
@@ -83,6 +122,7 @@ struct Home: View {
         
         fetchNotes()
     }
+    
 }
 
 struct Note: Identifiable, Codable {
